@@ -1,0 +1,59 @@
+package com.krest.acl.security;
+
+
+import com.krest.acl.service.UserService;
+import com.krest.common.exception.myException;
+import com.krest.common.utils.JwtUtils;
+import com.krest.mysecurity.entity.LoginUser;
+import com.krest.mysecurity.entity.SecurityUser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * @author: krest
+ * @date: 2021/5/20 19:46
+ * @description:
+ */
+@Service("userDetailsService")
+public class UserDetailsImpl implements UserDetailsService {
+
+
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+    /**
+     * 从数据库中得到用户的信息
+     */
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
+        // 从数据库中找到用户信息
+        com.krest.acl.entity.User user = userService.selectByUserName(username);
+        if(user == null){
+            throw new myException(500,"用户不存在");
+        }
+        LoginUser cur = new LoginUser();
+        List<String> authorities = new ArrayList<>();
+
+        authorities.add("/acl/role/getAll");
+        cur.setId(user.getId());
+        cur.setUsername(user.getUsername());
+        cur.setPassword(user.getPassword());
+        cur.setToken(JwtUtils.getJwtToken(user.getId()));
+        SecurityUser securityUser = new SecurityUser(cur, authorities);
+
+        System.out.println("从数据库获取security登录信息:" + securityUser);
+        // 数据库中的密码已经加密，所以可以直接进行验证
+        return securityUser;
+    }
+}

@@ -1,0 +1,31 @@
+# 服务端口
+server:
+  port: 8005
+  # 服务名
+spring:
+  application:
+    name: service-gateway
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          #使用服务发现路由
+          enabled: true
+          #服务路由名小写
+          lower-case-service-id: true
+      routes:
+        - id: service3-acl
+          uri: lb://service3-acl
+        # 传入条件数组，判断是否满足条件,如果不满住，就不允许访问端口
+          predicates:
+            - Path=/acl/**
+
+        - id: service4-main
+          uri: lb://service4-main
+          # 传入条件数组，判断是否满足条件,如果不满住，就不允许访问端口
+          predicates:
+            - Path=/employee/**
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848,127.0.0.1:8849,127.0.0.1:8850

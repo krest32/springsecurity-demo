@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.krest.acl.mapper.UserMapper">
+
+    <select id="getAllAdminUser" resultType="com.krest.acl.entity.vo.UserRoleVo">
+        SELECT  u.id AS userId,
+	            t.id AS userId,
+	            t.username AS username,
+	            p.id AS roleId,
+	            p.role_name AS roleName
+        FROM    acl_user u
+        LEFT    JOIN acl_user_role r  ON s.user_id = t.id
+		LEFT    JOIN acl_role p  ON s.role_id = p.id
+		Where   s.is_deleted=0
+    </select>
+
+</mapper>
